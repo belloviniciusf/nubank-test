@@ -7,16 +7,15 @@ var rl = readline.createInterface({
   output: process.stdout
 });
 
-let currentAccount;
-
 rl.on('line', function (cmd) {
     const jsonData = JSON.parse(cmd);
     const violations = [];
 
     if (jsonData.transaction) {
-        const transaction = jsonData.transaction;
+        const currentAccount = Account.getInstance();
+        const transaction = jsonData.transaction;        
 
-        if (!(currentAccount instanceof Account)) {
+        if (!currentAccount) {
             const logResponse = {
                 ...jsonData,
                 violations
@@ -28,27 +27,18 @@ rl.on('line', function (cmd) {
             return;
         }
 
-        try {
-            currentAccount.addTransaction(transaction);            
-        } catch (err) {
-            violations.push(err.violation);
-        } finally {
-            const logResponse = {
-                transaction: {
-                    ...transaction,
-                    'available-limit': currentAccount.getAvailableLimit(),                    
-                },                                
-                violations
-            };
-    
-            console.log('\r', JSON.stringify(logResponse, null), '\n -----');            
-        }                            
+        currentAccount.addTransaction(transaction);            
+
+        const logMessage = currentAccount.getLogMessage();
+
+        console.log('\r', JSON.stringify(logMessage, null), '\n -----');                    
     }        
     else {               
         const account = jsonData.account;        
-
+        let currentAccount;
+        
         try {
-            currentAccount = new Account(account['active-card'], account['available-limit']);        
+            currentAccount = new Account(account['active-card'], account['available-limit']);
         } catch (err) {
             if (err instanceof AccountAlreadyInitialized) {                
                 violations.push(err.violation);
@@ -64,6 +54,5 @@ rl.on('line', function (cmd) {
 
             console.log('\r', JSON.stringify(logResponse, null), '\n -----');            
         }                    
-    }        
-    // console.log('You just typed: '+ JSON.stringify(jsonData, null, 2));
+    }            
 });

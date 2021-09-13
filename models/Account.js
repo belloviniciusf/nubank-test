@@ -1,8 +1,6 @@
-const CardNotActivated = require("../helpers/CardNotActivated");
-const InsufficientLimit = require("../helpers/InsufficientLimit");
 const AccountAlreadyInitialized = require("../helpers/AccountAlreadyInitialized");
-const HighFrequencySmallInterval = require("../helpers/HighFrequencySmallInterval");
-const DoubledTransaction = require("../helpers/DoubledTransaction");
+const transactionRules = require("../helpers/transactionRules");
+const Validator = require('../models/Validator');
 
 class Account {
     constructor(isCardActived, availableLimit) {
@@ -14,40 +12,70 @@ class Account {
 
         this.isCardActived = isCardActived;
         this.availableLimit = availableLimit;
+        this.currentTransaction = {};
         this.transactions = [];
     }        
+
+    static getInstance() {
+        return Account._instance;
+    }
     
-    addTransaction(transaction) {                     
-        if (!this.isCardActived) throw new CardNotActivated();        
-        if (transaction.amount > this.availableLimit) throw new InsufficientLimit();
-
-        const currentTransactionTime = new Date(transaction.time);
+    addTransaction(transaction) { 
+        this.setCurrentTransaction(transaction);
         
-        const recentlyTransactions = this.transactions.filter((transaction) => {
-            const pastTransactionTime = new Date(transaction.time);
+        const validator = new Validator(transactionRules);
 
-            const timeElapsed = currentTransactionTime - pastTransactionTime;            
-            
-            return timeElapsed <= 120000;
-        });            
-            
-        if (recentlyTransactions.length > 3) throw new HighFrequencySmallInterval();
-        if (recentlyTransactions.some((pastTransaction) =>
-            pastTransaction.merchant === transaction.merchant 
-            && pastTransaction.amount === transaction.amount)) {
-                throw new DoubledTransaction();
-            }
+        const violations = validator.validate(this, transaction);        
 
-        this.availableLimit = this.availableLimit - transaction.amount;
-        this.transactions.push(transaction);        
+        this.setCurrentTransaction({
+            transaction,
+            violations
+        })
+     
+        if (violations.length > 0) return;
+
+        this.setAvailableLimit(this.availableLimit - transaction.amount);        
+        this.setTransactions([...this.transactions, transaction]);
     }        
 
     getIsCardActive() {
         return this.isCardActived;
     }
 
+    setAvailableLimit(availableLimit) {
+        this.availableLimit = availableLimit;
+    }
+
     getAvailableLimit() {
         return this.availableLimit;
+    }
+
+    setCurrentTransaction(transaction) {
+        this.currentTransaction = transaction;                
+    }
+
+    getCurrentTransaction() {
+        return this.currentTransaction;
+    }
+
+    setTransactions(transactions) {
+        this.transactions = transactions;
+    } 
+
+    getTransactions() {
+        return this.transactions;
+    }    
+
+    getLogMessage() {        
+        const { transaction, violations } = this.getCurrentTransaction();
+
+        return {
+            transaction: {
+                ...transaction,
+                'available-limit': this.getAvailableLimit(),
+            },
+            violations,
+        }
     }
 }
 
