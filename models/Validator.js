@@ -1,12 +1,18 @@
 class Validator {
     constructor(rules) {                
         this.rules = rules;
-    };            
+    };                
 
-    validate(instance, currentData) {
-        return this.rules.filter((rule) => {
+    validate(instance, type, currentData) {
+        const typeRules = this.rules[type];        
+
+        const violatedRules = typeRules.filter((rule) => {
             return rule.hasSomeViolation(instance, currentData);            
-        }).map((rule) => rule.violation);
+        });
+
+        return violatedRules.some((rule) => rule.break) ? 
+            violatedRules.filter((rule) => rule.break).map((rule) => rule.violation):
+            violatedRules.map((rule) => rule.violation)
     }
 }
 

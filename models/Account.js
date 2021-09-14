@@ -1,14 +1,10 @@
-const AccountAlreadyInitialized = require("../helpers/AccountAlreadyInitialized");
-const transactionRules = require("../helpers/transactionRules");
-const Validator = require('../models/Validator');
-
 class Account {
     constructor(isCardActived, availableLimit) {
         if(Account._instance) {
-            throw new AccountAlreadyInitialized();
+            return Account._instance;
         }
 
-        Account._instance = this;
+        Account._instance = this;        
 
         this.isCardActived = isCardActived;
         this.availableLimit = availableLimit;
@@ -20,22 +16,9 @@ class Account {
         return Account._instance;
     }
     
-    addTransaction(transaction) { 
-        this.setCurrentTransaction(transaction);
-        
-        const validator = new Validator(transactionRules);
-
-        const violations = validator.validate(this, transaction);        
-
-        this.setCurrentTransaction({
-            transaction,
-            violations
-        })
-     
-        if (violations.length > 0) return;
-
+    addTransaction(transaction) {     
         this.setAvailableLimit(this.availableLimit - transaction.amount);        
-        this.setTransactions([...this.transactions, transaction]);
+        this.setTransactions([...this.transactions, transaction]);        
     }        
 
     getIsCardActive() {
@@ -50,14 +33,6 @@ class Account {
         return this.availableLimit;
     }
 
-    setCurrentTransaction(transaction) {
-        this.currentTransaction = transaction;                
-    }
-
-    getCurrentTransaction() {
-        return this.currentTransaction;
-    }
-
     setTransactions(transactions) {
         this.transactions = transactions;
     } 
@@ -66,15 +41,10 @@ class Account {
         return this.transactions;
     }    
 
-    getLogMessage() {        
-        const { transaction, violations } = this.getCurrentTransaction();
-
-        return {
-            transaction: {
-                ...transaction,
-                'available-limit': this.getAvailableLimit(),
-            },
-            violations,
+    getLogMessage() {                
+        return {            
+            'active-card': this.getIsCardActive(),
+            'available-limit': this.getAvailableLimit(),
         }
     }
 }
