@@ -1,0 +1,24 @@
+{
+  "name": "authorizer",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "dependencies": {
+    "codecov": "^3.8.3",
+    "jest": "^27.2.0"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "jest --config jestconfig.json" 
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/belloviniciusf/nubank-test.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/belloviniciusf/nubank-test/issues"
+  },
+  "homepage": "https://github.com/belloviniciusf/nubank-test#readme"
+}

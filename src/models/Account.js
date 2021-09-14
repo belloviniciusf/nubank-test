@@ -7,8 +7,7 @@ class Account {
         Account._instance = this;        
 
         this.isCardActived = isCardActived;
-        this.availableLimit = availableLimit;
-        this.currentTransaction = {};
+        this.availableLimit = availableLimit;        
         this.transactions = [];
     }        
 
@@ -43,8 +42,8 @@ class Account {
 
     getLogMessage() {                
         return {            
-            'active-card': this.getIsCardActive(),
-            'available-limit': this.getAvailableLimit(),
+            'active-card': this.isCardActived,
+            'available-limit': this.availableLimit
         }
     }
 }

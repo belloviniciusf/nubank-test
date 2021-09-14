@@ -1,6 +1,6 @@
 const OPERATIONS_TYPE = require('../enums/operationsType');
 
-const initialRules = {
+const rules = {
     [OPERATIONS_TYPE.ACCOUNT]: [
         {
             hasSomeViolation: (instance) => instance,
@@ -67,4 +67,4 @@ const initialRules = {
     ]
 }
 
-module.exports = initialRules;    
+module.exports = rules;    
