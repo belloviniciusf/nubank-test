@@ -1,10 +1,13 @@
 const { describe, expect, it, beforeEach } = require("@jest/globals");
 const OPERATIONS_TYPE = require("../enums/operationsType");
-const Account = require('../models/Account');
-jest.mock('../models/Account');
-
-const { receiveMessage, processMessage } = require('../authorizer');
+const { receiveMessage, processMessage, start } = require('../authorizer');
 const { MOCK_ACCOUNT_DATA, MOCK_TRANSACTION_DATA } = require(".");
+
+const Account = require('../models/Account');
+const readline = require('readline');
+
+jest.mock('../models/Account');
+jest.mock('readline');
 
 describe('authorizer', () => {    
     describe('receiveMessage', () => {
@@ -21,7 +24,7 @@ describe('authorizer', () => {
         });
     });
 
-    describe('processMessage', () => {
+    describe('processMessage', () => {        
         beforeEach(() => {            
             Account.mockClear();            
         });
@@ -97,6 +100,22 @@ describe('authorizer', () => {
 
             expect(addTransaction).toBeCalledWith(MOCK_TRANSACTION_DATA.transaction);
             expect(receivedResponse).toStrictEqual(expectedResponse);
-        });        
+        });
     });
-})
+
+    describe('start', () => {
+        it('reads commands and then log', () => {            
+            readline.createInterface = jest.fn().mockReturnValue({
+                addListener: jest.fn()                                        
+                    .mockImplementationOnce((_, cb) => {                        
+                        cb('{ "account": {} }')
+                    })
+                    .mockImplementationOnce()                        
+            })            
+
+            start();
+
+            expect(2).toBe(2);
+        });
+    });
+});

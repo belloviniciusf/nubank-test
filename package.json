@@ -2,7 +2,7 @@
   "name": "authorizer",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "src/index.js",
   "dependencies": {
     "codecov": "^3.8.3",
     "jest": "^27.2.0"
@@ -19,6 +19,9 @@
   "license": "ISC",
   "bugs": {
     "url": "https://github.com/belloviniciusf/nubank-test/issues"
+  },
+  "bin": {
+    "authorizer": "./src/index.js"
   },
   "homepage": "https://github.com/belloviniciusf/nubank-test#readme"
 }

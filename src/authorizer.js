@@ -52,13 +52,15 @@ function start() {
     const readlineInterface = readline.createInterface({
         input: process.stdin,
         output: process.stdout
-    });
+    });    
 
-    readlineInterface.on('line', function (command) {
+    readlineInterface.addListener('line', (command) => {
         const jsonCommand = JSON.parse(command);
 
         task.addOperation(jsonCommand)   
-    }).on('close', () => {
+    });
+
+    readlineInterface.addListener('close', () => {
         const operations = task.getOperations();
 
         const output = operations.map((operation) => {
@@ -69,7 +71,7 @@ function start() {
 
         console.log('\r');
         output.map((log) => console.log(JSON.stringify(log, null)));    
-    })
+    })    
 };
 
 module.exports = {
