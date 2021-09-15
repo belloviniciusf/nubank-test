@@ -4,19 +4,15 @@ const Validator = require('./models/Validator');
 const Task = require('./models/Task');
 const businessRules = require('./helpers/businessRules');
 const OPERATIONS_TYPE = require('./enums/operationsType');
-const readlineInterface = readline.createInterface({
-    input: process.stdin,
-    output: process.stdout
-});
 
-const receiveMessage = (message) => {
-    if (message.account) return { type: OPERATIONS_TYPE.ACCOUNT, message: message.account };
-    else return { type: OPERATIONS_TYPE.TRANSACTION, message: message.transaction };
+const receiveMessage = (message) => {    
+    if (message.account) return { type: OPERATIONS_TYPE.ACCOUNT, message: message.account };            
+    else return { type: OPERATIONS_TYPE.TRANSACTION, message: message.transaction };           
 };
 
-const processMessage = (operation) => {
-    const currentAccount = Account.getInstance();
-
+const processMessage = (operation) => {  
+    let currentAccount = Account.getInstance();    
+    
     const validator = new Validator(businessRules);
 
     const violations = validator.validate(currentAccount, operation.type, operation.message);        
@@ -24,8 +20,8 @@ const processMessage = (operation) => {
     switch(operation.type) {
         case OPERATIONS_TYPE.ACCOUNT:   {
             const account = operation.message;
-
-            new Account(account['active-card'], account['available-limit']);        
+            
+            currentAccount = new Account(account['active-card'], account['available-limit']);
 
             break;
         }                                 
@@ -40,11 +36,9 @@ const processMessage = (operation) => {
         }                                     
         default:
             break;
-    }        
+    }
 
-    const currentInstance = Account.getInstance();
-
-    const account = currentInstance ? currentInstance.getLogMessage() : {};    
+    const account = currentAccount ? currentAccount.getLogMessage() : {};            
 
     return {
         account,
@@ -54,6 +48,11 @@ const processMessage = (operation) => {
 
 function start() {
     const task = new Task();    
+    
+    const readlineInterface = readline.createInterface({
+        input: process.stdin,
+        output: process.stdout
+    });
 
     readlineInterface.on('line', function (command) {
         const jsonCommand = JSON.parse(command);
@@ -68,6 +67,7 @@ function start() {
             return processMessage(processedMessage);
         });
 
+        console.log('\r');
         output.map((log) => console.log(JSON.stringify(log, null)));    
     })
 };

@@ -1,21 +1,22 @@
 const OPERATIONS_TYPE = require('../enums/operationsType');
+const Account = require('../models/Account');
 
 const rules = {
     [OPERATIONS_TYPE.ACCOUNT]: [
         {
-            hasSomeViolation: (instance) => instance,
+            hasSomeViolation: () => Account.getInstance(),              
             violation: 'account-already-initialized'
         },
     ],
     [OPERATIONS_TYPE.TRANSACTION]: [
         {
-            hasSomeViolation: (instance) => !instance,
+            hasSomeViolation: () => !Account.getInstance(),
             violation: 'account-not-initialized',
             break: true,
         },
         {
             hasSomeViolation: (instance) => {                        
-                return !instance?.isCardActived;
+                return !instance?.getIsCardActive();
             },
             violation: 'card-not-active'
         },
