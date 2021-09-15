@@ -14,5 +14,7 @@
 
 # create executable
 
-`npm install -g .`
-`authorizer < examples/operations-account-not-initialized`
+```
+  npm install -g .
+  authorizer < examples/operations-account-not-initialized
+```
