@@ -43,29 +43,49 @@ describe('authorizer', () => {
 
             const receivedResponse = processMessage(processedMessage);                                    
 
-            expect(Account).toHaveBeenCalledTimes(1)
+            expect(Account).toHaveBeenCalledTimes(1)            
             expect(receivedResponse).toStrictEqual({ account: MOCK_ACCOUNT_DATA.account, violations: [] });
-        });   
+        }); 
+        
+        it('returns empty account when already exists one', () => {
+            const mockGetInstance = jest.fn().mockReturnValue({                   
+                getLogMessage: () => MOCK_ACCOUNT_DATA.account                           
+            });
+
+            Account.getInstance = mockGetInstance;            
+
+            const processedMessage = {
+                type: OPERATIONS_TYPE.ACCOUNT,
+                message: MOCK_ACCOUNT_DATA.account
+            }
+
+            const receivedResponse = processMessage(processedMessage);                                                
+
+            expect(Account).toHaveBeenCalledTimes(1)
+            expect(receivedResponse).toStrictEqual({ account: MOCK_ACCOUNT_DATA.account, violations: ['account-already-initialized'] });
+        });
         
         it('creates successfully a transaction', () => {
             const getLogMessage = ()  => ({
                 ...MOCK_ACCOUNT_DATA.account,
                 'available-limit': MOCK_ACCOUNT_DATA.account["available-limit"] - MOCK_TRANSACTION_DATA.transaction.amount
-            })                            
+            });
+            
+            const addTransaction = jest.fn();
 
             const mockGetInstance = jest.fn().mockReturnValue({
                 getLogMessage,                
                 getIsCardActive: () => true,
                 getAvailableLimit: () => MOCK_ACCOUNT_DATA.account["available-limit"],
                 getTransactions: () => [MOCK_TRANSACTION_DATA],
-                addTransaction: () => jest.fn()
+                addTransaction
             });
 
             Account.getInstance = mockGetInstance;
 
             const processedTransactionMessage = {
                 type: OPERATIONS_TYPE.TRANSACTION,
-                message: MOCK_ACCOUNT_DATA.account
+                message: MOCK_TRANSACTION_DATA.transaction
             };
 
             const receivedResponse = processMessage(processedTransactionMessage);
@@ -75,6 +95,7 @@ describe('authorizer', () => {
                 violations: []
             }            
 
+            expect(addTransaction).toBeCalledWith(MOCK_TRANSACTION_DATA.transaction);
             expect(receivedResponse).toStrictEqual(expectedResponse);
         });        
     });
