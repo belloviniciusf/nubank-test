@@ -57,17 +57,17 @@ function start() {
     readlineInterface.addListener('line', (command) => {
         const jsonCommand = JSON.parse(command);
 
-        task.addOperation(jsonCommand)   
+        task.addOperation(jsonCommand);
     });
 
     readlineInterface.addListener('close', () => {
-        const operations = task.getOperations();
+        const operations = task.getOperations();        
 
         const output = operations.map((operation) => {
             const processedMessage = receiveMessage(operation);
 
             return processMessage(processedMessage);
-        });
+        });                
 
         console.log('\r');
         output.map((log) => console.log(JSON.stringify(log, null)));    

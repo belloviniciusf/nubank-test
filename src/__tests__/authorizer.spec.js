@@ -1,4 +1,4 @@
-const { describe, expect, it, beforeEach } = require("@jest/globals");
+const { describe, expect, it, beforeEach, afterAll } = require("@jest/globals");
 const OPERATIONS_TYPE = require("../enums/operationsType");
 const { receiveMessage, processMessage, start } = require('../authorizer');
 const { MOCK_ACCOUNT_DATA, MOCK_TRANSACTION_DATA } = require(".");
@@ -27,7 +27,12 @@ describe('authorizer', () => {
     describe('processMessage', () => {        
         beforeEach(() => {            
             Account.mockClear();            
-        });
+        });      
+        
+        afterAll(() => {
+            Account.mockClear();
+            Account.getInstance = jest.fn().mockReturnValue();
+        })
 
         it('creates successfully an account', () => {        
             const mockGetInstance = jest.fn().mockReturnValue();
@@ -104,18 +109,36 @@ describe('authorizer', () => {
     });
 
     describe('start', () => {
-        it('reads commands and then log', () => {            
+        beforeEach(() => {
+            Account.mockClear();
+            console.log = jest.fn();
+        })
+
+        it('reads command and then log', () => {               
+            Account.mockImplementation(() => {
+                return {                                         
+                    getLogMessage: () => MOCK_ACCOUNT_DATA.account
+                }                                
+            });
+            
             readline.createInterface = jest.fn().mockReturnValue({
                 addListener: jest.fn()                                        
                     .mockImplementationOnce((_, cb) => {                        
                         cb('{ "account": {} }')
                     })
-                    .mockImplementationOnce()                        
+                    .mockImplementationOnce((_, cb) => {
+                        cb()
+                    })                        
             })            
 
             start();
 
-            expect(2).toBe(2);
+            const expectedResponse = {
+                account: MOCK_ACCOUNT_DATA.account,
+                violations: []
+            };            
+
+            expect(console.log).toHaveBeenLastCalledWith(JSON.stringify(expectedResponse, null));
         });
     });
 });
