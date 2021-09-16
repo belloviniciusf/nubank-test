@@ -47,7 +47,7 @@ const processMessage = (operation) => {
 };
 
 function start() {
-    const task = new Task();    
+    const task = new Task();        
     
     const readlineInterface = readline.createInterface({
         input: process.stdin,
@@ -67,7 +67,7 @@ function start() {
             const processedMessage = receiveMessage(operation);
 
             return processMessage(processedMessage);
-        });                
+        });
 
         console.log('\r');
         output.map((log) => console.log(JSON.stringify(log, null)));    

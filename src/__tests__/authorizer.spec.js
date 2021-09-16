@@ -110,11 +110,12 @@ describe('authorizer', () => {
 
     describe('start', () => {
         beforeEach(() => {
-            Account.mockClear();
-            console.log = jest.fn();
+            Account.mockClear();            
         })
 
         it('reads command and then log', () => {               
+            console.log = jest.fn();            
+
             Account.mockImplementation(() => {
                 return {                                         
                     getLogMessage: () => MOCK_ACCOUNT_DATA.account
@@ -139,6 +140,54 @@ describe('authorizer', () => {
             };            
 
             expect(console.log).toHaveBeenLastCalledWith(JSON.stringify(expectedResponse, null));
+        });
+
+        it('returns "account-already-initialized" violation when account already exists', () => {
+            console.log = jest.fn();
+
+            Account
+                .mockImplementationOnce(() => { return { getLogMessage: () => MOCK_ACCOUNT_DATA.account } })
+                .mockImplementationOnce(() => { return { getLogMessage: () => ({
+                    ...MOCK_ACCOUNT_DATA.account,
+                    'available-limit': 350
+                })}});                    
+
+            const mockGetInstance = jest.fn()
+                .mockReturnValueOnce()
+                .mockReturnValueOnce({ 
+                    getLogMessage: () => MOCK_ACCOUNT_DATA.account 
+                });
+            
+            Account.getInstance = mockGetInstance;            
+
+            readline.createInterface = jest.fn().mockReturnValue({
+                addListener: jest.fn()                                        
+                    .mockImplementationOnce((_, cb) => {                        
+                        cb('{"account": {"active-card": true, "available-limit": 175}}')
+                        cb('{"account": {"active-card": true, "available-limit": 350}}')
+                    })                                        
+                    .mockImplementationOnce((_, cb) => {
+                        cb()
+                    })                        
+            });                        
+
+            start();                     
+
+            expect(console.log).toBeCalledTimes(3);                        
+
+            expect(console.log).toHaveBeenNthCalledWith(1, '\r');
+            expect(console.log).toHaveBeenNthCalledWith(2, 
+                JSON.stringify({
+                    account: {"active-card": true, "available-limit": 175},
+                    violations: ['account-already-initialized']
+                }, null)
+            );
+            expect(console.log).toHaveBeenNthCalledWith(3, 
+                JSON.stringify({
+                    account: {"active-card": true, "available-limit": 350},
+                    violations: []
+                }, null)
+            );                    
         });
     });
 });
