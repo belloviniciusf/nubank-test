@@ -4,28 +4,14 @@
   "description": "",
   "main": "src/index.js",
   "dependencies": {
-    "codecov": "^3.8.3",
     "jest": "^27.2.0"
-  },
-  "devDependencies": {
-    "@babel/core": "^7.15.5",
-    "@babel/preset-env": "^7.15.6",
-    "babel-jest": "^27.2.0"
   },
   "scripts": {
     "test": "jest --config jestconfig.json -i"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/belloviniciusf/nubank-test.git"
-  },
   "author": "",
   "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/belloviniciusf/nubank-test/issues"
-  },
   "bin": {
     "authorizer": "./src/index.js"
-  },
-  "homepage": "https://github.com/belloviniciusf/nubank-test#readme"
+  }
 }

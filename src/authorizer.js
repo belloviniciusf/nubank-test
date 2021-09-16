@@ -1,5 +1,3 @@
-#!/usr/bin/env node
-
 const readline = require('readline');
 const Account = require('./models/Account');
 const Validator = require('./models/Validator');

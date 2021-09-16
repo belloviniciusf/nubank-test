@@ -1,5 +1,7 @@
 const OPERATIONS_TYPE = require('./enums/operationsType');
 
+const twoMinutesMilliseconds = 120000;
+
 const rules = {
     [OPERATIONS_TYPE.ACCOUNT]: [
         {
@@ -27,15 +29,15 @@ const rules = {
         },
         {
             hasSomeViolation: (instance, transaction) => {                                        
-                const currentTransactions = instance?.getTransactions();
+                const accountTransactions = instance?.getTransactions();
                 const currentTransactionTime = new Date(transaction?.time);
         
-                const recentlyTransactions = currentTransactions?.filter((pastTransaction) => {
+                const recentlyTransactions = accountTransactions?.filter((pastTransaction) => {
                     const pastTransactionTime = new Date(pastTransaction?.time);
             
                     const timeElapsed = currentTransactionTime - pastTransactionTime;            
                         
-                    return timeElapsed <= 120000;
+                    return timeElapsed <= twoMinutesMilliseconds;
                 });
     
                 return recentlyTransactions?.length >= 3;
@@ -44,15 +46,15 @@ const rules = {
         },
         {
             hasSomeViolation: (instance, transaction) => {                                    
-                const currentTransactions = instance.getTransactions();
+                const accountTransactions = instance.getTransactions();
                 const currentTransactionTime = new Date(transaction?.time);
     
-                const recentlyTransactions = currentTransactions?.filter((transaction) => {
+                const recentlyTransactions = accountTransactions?.filter((transaction) => {
                     const pastTransactionTime = new Date(transaction?.time);
             
                     const timeElapsed = currentTransactionTime - pastTransactionTime;            
                         
-                    return timeElapsed <= 120000
+                    return timeElapsed <= twoMinutesMilliseconds
                 });        
     
                 return recentlyTransactions?.some((pastTransaction) => 
