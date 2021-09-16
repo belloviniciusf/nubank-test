@@ -21,7 +21,7 @@ const processMessage = (operation) => {
         case OPERATIONS_TYPE.ACCOUNT:   {
             const account = operation.message;
             
-            currentAccount = new Account(account['active-card'], account['available-limit']);
+            currentAccount = new Account(account['active-card'], account['available-limit']);            
 
             break;
         }                                 
@@ -36,7 +36,7 @@ const processMessage = (operation) => {
         }                                     
         default:
             break;
-    }
+    }    
 
     const account = currentAccount ? currentAccount.getLogMessage() : {};            
 

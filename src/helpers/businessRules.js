@@ -1,36 +1,32 @@
 const OPERATIONS_TYPE = require('../enums/operationsType');
-const Account = require('../models/Account');
 
 const rules = {
     [OPERATIONS_TYPE.ACCOUNT]: [
         {
-            hasSomeViolation: () => Account.getInstance(),              
+            hasSomeViolation: (instance) => instance,              
             violation: 'account-already-initialized'
         },
     ],
     [OPERATIONS_TYPE.TRANSACTION]: [
         {
-            hasSomeViolation: () => !Account.getInstance(),
+            hasSomeViolation: (instance) => !instance,                
             violation: 'account-not-initialized',
             break: true,
         },
         {
-            hasSomeViolation: (instance) => {                        
+            hasSomeViolation: (instance) => {                                
                 return !instance?.getIsCardActive();
             },
             violation: 'card-not-active'
         },
         {
-            hasSomeViolation: (instance, transaction) => {        
-                // console.log('transaction.amount', transaction.amount);
-                // console.log('instance?.getAvailableLimit()', instance?.getAvailableLimit());
-                
+            hasSomeViolation: (instance, transaction) => {                            
                 return transaction?.amount > instance?.getAvailableLimit();
             },
             violation: 'insufficient-limit'
         },
         {
-            hasSomeViolation: (instance, transaction) => {                        
+            hasSomeViolation: (instance, transaction) => {                                        
                 const currentTransactions = instance?.getTransactions();
                 const currentTransactionTime = new Date(transaction?.time);
     
@@ -47,8 +43,8 @@ const rules = {
             violation: 'high-frequency-small-interval'
         },
         {
-            hasSomeViolation: (instance, transaction) => {                    
-                const currentTransactions = instance?.getTransactions();
+            hasSomeViolation: (instance, transaction) => {                                    
+                const currentTransactions = instance.getTransactions();
                 const currentTransactionTime = new Date(transaction?.time);
     
                 const recentlyTransactions = currentTransactions?.filter((transaction) => {

@@ -1,4 +1,4 @@
-const { describe, expect, it, beforeEach, afterAll } = require("@jest/globals");
+const { describe, expect, it, beforeEach, afterEach, afterAll } = require("@jest/globals");
 const OPERATIONS_TYPE = require("../enums/operationsType");
 const { receiveMessage, processMessage, start } = require('../authorizer');
 const { MOCK_ACCOUNT_DATA, MOCK_TRANSACTION_DATA } = require(".");
@@ -151,7 +151,7 @@ describe('authorizer', () => {
             expect(console.log).toHaveBeenLastCalledWith(JSON.stringify(expectedResponse, null));
         });
 
-        it('returns "account-already-initialized" violation when account already exists', () => {
+        it('returns "account-already-initialized" violation when account already exists', () => {          
             const commands = [
                 {"account": {"active-card": true, "available-limit": 175}},
                 {"account": {"active-card": true, "available-limit": 350}}                   
@@ -179,20 +179,75 @@ describe('authorizer', () => {
             start();                     
 
             expect(console.log).toBeCalledTimes(3);                        
-
-            expect(console.log).toHaveBeenNthCalledWith(1, '\r');
+                        
             expect(console.log).toHaveBeenNthCalledWith(2, 
                 JSON.stringify({
                     account: {"active-card": true, "available-limit": 175},
+                    violations: []
+                }, null)
+            );                    
+
+            expect(console.log).toHaveBeenNthCalledWith(3, 
+                JSON.stringify({
+                    account: {"active-card": true, "available-limit": 350},
                     violations: ['account-already-initialized']
+                }, null)
+            );
+        });
+
+        it('returns "account-not-initialized" when try to a transaction without account', () => {
+            const commands = [
+                { transaction: { merchant: "Uber Eats", amount: 25, time: "2020-12-01T11:07:00.000Z"}},
+                { account: { "active-card": true, "available-limit": 225 }},
+                { transaction: { merchant: "Uber Eats", amount: 25, time: "2020-12-01T11:07:00.000Z"}}
+            ];
+
+            setupReadlineInterface(commands);            
+            
+            Account
+                .mockImplementationOnce(() => { 
+                    return {
+                        getLogMessage: () => ({
+                            ...MOCK_ACCOUNT_DATA.account,
+                            'available-limit': 225
+                        }
+                )}});
+            
+            const mockGetInstance = jest.fn()
+                .mockReturnValueOnce()                                          
+                .mockReturnValueOnce()                
+                .mockReturnValueOnce({ 
+                    getLogMessage: () => ({
+                        ...MOCK_ACCOUNT_DATA.account,
+                        'available-limit': 200
+                    }),
+                    addTransaction: () => {} 
+                });
+            
+            Account.getInstance = mockGetInstance;            
+
+            start();
+
+            expect(console.log).toBeCalledTimes(4);                        
+
+            expect(console.log).toHaveBeenNthCalledWith(2, 
+                JSON.stringify({
+                    account: {},
+                    violations:["account-not-initialized"],                    
                 }, null)
             );
             expect(console.log).toHaveBeenNthCalledWith(3, 
                 JSON.stringify({
-                    account: {"active-card": true, "available-limit": 350},
-                    violations: []
+                    account:{"active-card": true, "available-limit": 225},
+                    violations:[]                                        
                 }, null)
-            );                    
+            );   
+            expect(console.log).toHaveBeenNthCalledWith(4, 
+                JSON.stringify({
+                    "account":{"active-card":true,"available-limit": 200},
+                    "violations":[]                    
+                }, null)
+            );            
         });
     });
 });
