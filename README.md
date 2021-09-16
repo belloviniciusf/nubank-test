@@ -9,7 +9,7 @@ This challenge is part of job process from Nubank. It was necessary to make an a
 
 # Disclaimer
 
-The `Authorizer` its an application that looks similar to a messaging queue. Its receive data, process it independently even has the data is not useful and delivery result. Therefore, I chose to think about the solution in these steps:
+The `Authorizer` its an application that looks similar to a messaging queue, in my opinion. Its receive data, process it independently even has the data is not useful and delivery result. Therefore, I chose to think about the solution in these steps:
   - Receive all data and saved it as `operations`;
   - Transform it in common object that `Authorizer` could know what kind of data is (`account/transaction`);
   - Process these formatted messages applying the business rules.
