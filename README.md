@@ -23,6 +23,8 @@ I created 3 models:
   - **Validator** - It is a generic validator to apply the business rules.
 The business rules are compiled in a individual file cause it is something shared to the project. It is a object [key: value] that enables easily add, modify or delete some rule from kind of data.
 
+_Observation_: I created a folder called `examples` with all example files to test each business rule.
+
 --- 
 
 ## Run by Docker (recomendable)
@@ -53,3 +55,4 @@ You must have [Node 14](https://nodejs.org/en/) installed to run the project.
 
 2. Run the tests
 `npm test`
+
