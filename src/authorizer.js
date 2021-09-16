@@ -15,27 +15,27 @@ const processMessage = (operation) => {
     
     const validator = new Validator(businessRules);
 
-    const violations = validator.validate(currentAccount, operation.type, operation.message);        
+    const violations = validator.validate(currentAccount, operation.type, operation.message);    
 
-    switch(operation.type) {
-        case OPERATIONS_TYPE.ACCOUNT:   {
-            const account = operation.message;
-            
-            currentAccount = new Account(account['active-card'], account['available-limit']);            
-
-            break;
-        }                                 
-        case OPERATIONS_TYPE.TRANSACTION: {
-            if (violations.length > 0) break;
-
-            const transaction = operation.message;
-
-            currentAccount.addTransaction(transaction);
-
-            break;
-        }                                     
-        default:
-            break;
+    if (violations.length === 0) {
+        switch(operation.type) {
+            case OPERATIONS_TYPE.ACCOUNT: {
+                const account = operation.message;
+                
+                currentAccount = new Account(account['active-card'], account['available-limit']);            
+    
+                break;
+            }                                 
+            case OPERATIONS_TYPE.TRANSACTION: {
+                const transaction = operation.message;
+    
+                currentAccount.addTransaction(transaction);
+    
+                break;
+            }                                     
+            default:
+                break;
+        }    
     }    
 
     const account = currentAccount ? currentAccount.getLogMessage() : {};            
@@ -61,7 +61,7 @@ function start() {
     });
 
     readlineInterface.addListener('close', () => {
-        const operations = task.getOperations();                        
+        const operations = task.getOperations();
 
         const output = operations.map((operation) => {
             const processedMessage = receiveMessage(operation);            

@@ -33,6 +33,15 @@ const defaultAccountInstanceMethods = () => {
     }
 };
 
+const formatAccountResponse = (activeCard, availableLimit, violations) => 
+    JSON.stringify({
+        account: {
+            'active-card': activeCard,
+            'available-limit': availableLimit
+        },
+        violations
+    }, null);
+
 describe('authorizer', () => {    
     describe('receiveMessage', () => {
         it('returns a message of "account" type', () => {                
@@ -92,8 +101,7 @@ describe('authorizer', () => {
             }
 
             const receivedResponse = processMessage(processedMessage);                                                
-
-            expect(Account).toHaveBeenCalledTimes(1)
+            
             expect(receivedResponse).toStrictEqual({ account: MOCK_ACCOUNT_DATA.account, violations: ['account-already-initialized'] });
         });
 
@@ -114,17 +122,13 @@ describe('authorizer', () => {
                 'available-limit': MOCK_ACCOUNT_DATA.account["available-limit"] - MOCK_TRANSACTION_DATA.transaction.amount
             });
             
-            const addTransaction = jest.fn();
+            const addTransaction = jest.fn();            
 
-            const mockGetInstance = jest.fn().mockReturnValue({
-                getLogMessage,                
-                getIsCardActive: () => true,
-                getAvailableLimit: () => MOCK_ACCOUNT_DATA.account["available-limit"],
-                getTransactions: () => [MOCK_TRANSACTION_DATA],
+            Account.getInstance = jest.fn().mockReturnValue({
+                ...defaultAccountInstanceMethods(),
+                getLogMessage,
                 addTransaction
             });
-
-            Account.getInstance = mockGetInstance;
 
             const processedTransactionMessage = {
                 type: OPERATIONS_TYPE.TRANSACTION,
@@ -167,14 +171,9 @@ describe('authorizer', () => {
 
             setupReadlineInterface(commands);                    
 
-            start();
+            start();            
 
-            const expectedResponse = {
-                account: MOCK_ACCOUNT_DATA.account,
-                violations: []
-            };            
-
-            expect(console.log).toHaveBeenLastCalledWith(JSON.stringify(expectedResponse, null));
+            expect(console.log).toHaveBeenLastCalledWith(formatAccountResponse(true, 175, []));
         });
 
         it('returns "account-already-initialized" violation when account already exists', () => {          
@@ -188,11 +187,7 @@ describe('authorizer', () => {
             Account
                 .mockImplementationOnce(() => { 
                     return { getLogMessage: () => MOCK_ACCOUNT_DATA.account } 
-                })
-                .mockImplementationOnce(() => { return { getLogMessage: () => ({
-                    ...MOCK_ACCOUNT_DATA.account,
-                    'available-limit': 350
-                })}});
+                });
 
             const mockGetInstance = jest.fn()
                 .mockReturnValueOnce()
@@ -207,75 +202,14 @@ describe('authorizer', () => {
             expect(console.log).toBeCalledTimes(3);                        
                         
             expect(console.log).toHaveBeenNthCalledWith(2, 
-                JSON.stringify({
-                    account: {"active-card": true, "available-limit": 175},
-                    violations: []
-                }, null)
+                formatAccountResponse(true, 175, [])
             );                    
 
             expect(console.log).toHaveBeenNthCalledWith(3, 
-                JSON.stringify({
-                    account: {"active-card": true, "available-limit": 350},
-                    violations: ['account-already-initialized']
-                }, null)
+                formatAccountResponse(true, 175, ['account-already-initialized'])
             );
         });
 
-        it.skip('returns "account-not-initialized" when try to a transaction without account', () => {
-            const commands = [
-                { transaction: { merchant: "Uber Eats", amount: 25, time: "2020-12-01T11:07:00.000Z"}},
-                { account: { "active-card": true, "available-limit": 225 }},
-                { transaction: { merchant: "Uber Eats", amount: 25, time: "2020-12-01T11:07:00.000Z"}}
-            ];
-
-            setupReadlineInterface(commands);            
-            
-            Account
-                .mockImplementationOnce(() => { 
-                    return {
-                        getLogMessage: () => ({
-                            ...MOCK_ACCOUNT_DATA.account,
-                            'available-limit': 225
-                        }
-                )}});
-            
-            const mockGetInstance = jest.fn()
-                .mockReturnValueOnce()                                          
-                .mockReturnValueOnce()                
-                .mockReturnValueOnce({ 
-                    getLogMessage: () => ({
-                        ...MOCK_ACCOUNT_DATA.account,
-                        'available-limit': 200
-                    }),
-                    addTransaction: () => {} 
-                });
-            
-            Account.getInstance = mockGetInstance;            
-
-            start();
-
-            expect(console.log).toBeCalledTimes(4);                        
-
-            expect(console.log).toHaveBeenNthCalledWith(2, 
-                JSON.stringify({
-                    account: {},
-                    violations:["account-not-initialized"],                    
-                }, null)
-            );
-            expect(console.log).toHaveBeenNthCalledWith(3, 
-                JSON.stringify({
-                    account:{"active-card": true, "available-limit": 225},
-                    violations:[]                                        
-                }, null)
-            );   
-            expect(console.log).toHaveBeenNthCalledWith(4, 
-                JSON.stringify({
-                    "account":{"active-card":true,"available-limit": 200},
-                    "violations":[]                    
-                }, null)
-            );            
-        });
-        
         it('returns "card-not-active" when try to a transaction without actived card', () => {            
             const commands = [
                 { account : {"active-card": false, "available-limit": 100 } },
@@ -317,30 +251,19 @@ describe('authorizer', () => {
             
             Account.getInstance = mockGetInstance;            
 
-            start();
-
-            // expect(console.log).toBeCalledTimes(4);                        
+            start();            
 
             expect(console.log).toHaveBeenNthCalledWith(2, 
-                JSON.stringify({
-                    account: { "active-card": false, "available-limit": 100 },
-                    violations:[],                    
-                }, null)
+                formatAccountResponse(false, 100, [])                                                
             );
 
             expect(console.log).toHaveBeenNthCalledWith(3, 
-                JSON.stringify({
-                    account: { "active-card": false, "available-limit": 100 },
-                    violations: ['card-not-active'],                    
-                }, null)
+                formatAccountResponse(false, 100, ['card-not-active'])                
             );
 
-            // expect(console.log).toHaveBeenNthCalledWith(4, 
-            //     JSON.stringify({
-            //         account: { "active-card": false, "available-limit": 100 },
-            //         violations: ['card-not-active'],                    
-            //     }, null)
-            // );            
+            expect(console.log).toHaveBeenNthCalledWith(4, 
+                formatAccountResponse(false, 100, ['card-not-active'])
+            );            
         });
 
         it('returns "insufficient-limit" when try to do transaction without sufficient limit', () => {
@@ -397,31 +320,19 @@ describe('authorizer', () => {
             expect(console.log).toBeCalledTimes(5);                        
 
             expect(console.log).toHaveBeenNthCalledWith(2, 
-                JSON.stringify({
-                    account: { "active-card": true, "available-limit": 1000 },
-                    violations:[],                    
-                }, null)
+                formatAccountResponse(true, 1000, [])
             );
 
             expect(console.log).toHaveBeenNthCalledWith(3, 
-                JSON.stringify({
-                    account: { "active-card": true, "available-limit": 1000 },
-                    violations: ['insufficient-limit'],                    
-                }, null)
+                formatAccountResponse(true, 1000, ['insufficient-limit'])
             );
 
             expect(console.log).toHaveBeenNthCalledWith(4, 
-                JSON.stringify({
-                    account: { "active-card": true, "available-limit": 1000 },
-                    violations: ['insufficient-limit'],                    
-                }, null)
+                formatAccountResponse(true, 1000, ['insufficient-limit'])
             );
 
             expect(console.log).toHaveBeenNthCalledWith(5, 
-                JSON.stringify({
-                    account: { "active-card": true, "available-limit": 200 },
-                    violations: [],                    
-                }, null)
+                formatAccountResponse(true, 200, [])
             );
         });
 
@@ -502,38 +413,23 @@ describe('authorizer', () => {
             expect(console.log).toBeCalledTimes(7);                        
 
             expect(console.log).toHaveBeenNthCalledWith(2, 
-                JSON.stringify({
-                    account: { "active-card": true, "available-limit": 100 },
-                    violations:[],                    
-                }, null)
+                formatAccountResponse(true, 100, [])
             );
 
             expect(console.log).toHaveBeenNthCalledWith(3, 
-                JSON.stringify({
-                    account: { "active-card": true, "available-limit": 80 },
-                    violations: [],                    
-                }, null)
+                formatAccountResponse(true, 80, [])
             );
 
             expect(console.log).toHaveBeenNthCalledWith(4, 
-                JSON.stringify({
-                    account: { "active-card": true, "available-limit": 60 },
-                    violations: [],                    
-                }, null)
+                formatAccountResponse(true, 60, [])
             );
 
             expect(console.log).toHaveBeenNthCalledWith(5, 
-                JSON.stringify({
-                    account: { "active-card": true, "available-limit": 40 },
-                    violations: [],                    
-                }, null)
+                formatAccountResponse(true, 40, [])                 
             );
 
             expect(console.log).toHaveBeenNthCalledWith(6, 
-                JSON.stringify({
-                    account: { "active-card": true, "available-limit": 40 },
-                    violations: ['high-frequency-small-interval'],                    
-                }, null)
+                formatAccountResponse(true, 40, ['high-frequency-small-interval'])
             );
         });
 
@@ -604,38 +500,23 @@ describe('authorizer', () => {
             expect(console.log).toBeCalledTimes(6);                        
 
             expect(console.log).toHaveBeenNthCalledWith(2, 
-                JSON.stringify({
-                    account: { "active-card": true, "available-limit": 100 },
-                    violations:[],                    
-                }, null)
+                formatAccountResponse(true, 100, [])                                
             );
 
             expect(console.log).toHaveBeenNthCalledWith(3, 
-                JSON.stringify({
-                    account: { "active-card": true, "available-limit": 80 },
-                    violations: [],                    
-                }, null)
+                formatAccountResponse(true, 80, [])                                
             );
 
             expect(console.log).toHaveBeenNthCalledWith(4, 
-                JSON.stringify({
-                    account: { "active-card": true, "available-limit": 70 },
-                    violations: [],                    
-                }, null)
+                formatAccountResponse(true, 70, [])
             );
 
             expect(console.log).toHaveBeenNthCalledWith(5, 
-                JSON.stringify({
-                    account: { "active-card": true, "available-limit": 70 },
-                    violations: ['doubled-transaction'],                    
-                }, null)
+                formatAccountResponse(true, 70, ['doubled-transaction'])
             );
 
             expect(console.log).toHaveBeenNthCalledWith(6, 
-                JSON.stringify({
-                    account: { "active-card": true, "available-limit": 55 },
-                    violations: [],                    
-                }, null)
+                formatAccountResponse(true, 55, [])
             );
         });
 
@@ -736,38 +617,23 @@ describe('authorizer', () => {
             expect(console.log).toBeCalledTimes(9);                        
 
             expect(console.log).toHaveBeenNthCalledWith(2, 
-                JSON.stringify({
-                    account: { "active-card": true, "available-limit": 100 },
-                    violations:[],                    
-                }, null)
+                formatAccountResponse(true, 100, [])                
             );
 
-            expect(console.log).toHaveBeenNthCalledWith(3, 
-                JSON.stringify({
-                    account: { "active-card": true, "available-limit": 90 },
-                    violations: [],                    
-                }, null)
+            expect(console.log).toHaveBeenNthCalledWith(3,                 
+                formatAccountResponse(true, 90, [])                
             );
 
             expect(console.log).toHaveBeenNthCalledWith(4, 
-                JSON.stringify({
-                    account: { "active-card": true, "available-limit": 70 },
-                    violations: [],                    
-                }, null)
+                formatAccountResponse(true, 70, [])
             );
 
             expect(console.log).toHaveBeenNthCalledWith(5, 
-                JSON.stringify({
-                    account: { "active-card": true, "available-limit": 65 },
-                    violations: [],                    
-                }, null)
+                formatAccountResponse(true, 65, [])
             );
 
             expect(console.log).toHaveBeenNthCalledWith(6, 
-                JSON.stringify({
-                    account: { "active-card": true, "available-limit": 65 },
-                    violations: ["high-frequency-small-interval", "doubled-transaction"],                    
-                }, null)
+                formatAccountResponse(true, 65, ["high-frequency-small-interval", "doubled-transaction"])                
             );            
         });
     });
