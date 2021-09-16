@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 class Task {
     constructor() {
         this.operations = [];

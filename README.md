@@ -1,20 +1,23 @@
-# nubank-test
+# Nubank - Code Challenge
+## Run by Docker (recomendable)
 
-# setup
+1. You first must to build the image from project
+`docker build -t authorizer .`
 
-`npm install`
+2. After that you can run as standalone command, such example: 
+`docker run -i authorizer < examples/operations-account-already-initialized`
 
-# run test
-
-`npm test`
-
-# run examples
-
-`node src/index.js < examples/operations-account-not-initialized`
-
-# create executable
+## Run without Docker
 
 ```
-  npm install -g .
+  npm install
+  npm link
   authorizer < examples/operations-account-not-initialized
+```
+
+## Run tests
+
+```
+  npm install
+  npm test
 ```

@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 const readline = require('readline');
 const Account = require('./models/Account');
 const Validator = require('./models/Validator');
@@ -52,29 +54,25 @@ function start() {
     const readlineInterface = readline.createInterface({
         input: process.stdin,
         output: process.stdout
-    });    
+    });        
 
     readlineInterface.addListener('line', (command) => {
-        const jsonCommand = JSON.parse(command);
+        const jsonCommand = JSON.parse(command)        
 
         task.addOperation(jsonCommand);
     });
 
     readlineInterface.addListener('close', () => {
-        const operations = task.getOperations();        
-
-        // console.log('operations', operations);
+        const operations = task.getOperations();                        
 
         const output = operations.map((operation) => {
-            const processedMessage = receiveMessage(operation);
-
-            // console.log('processedMessage', processedMessage);
+            const processedMessage = receiveMessage(operation);            
 
             return processMessage(processedMessage);
         });        
 
         console.log('\r');
-        output.map((log) => console.log(JSON.stringify(log, null)));    
+        output.map((log) => console.log(JSON.stringify(log, null)));
     })    
 };
 
