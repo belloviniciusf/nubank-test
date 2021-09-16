@@ -45,7 +45,8 @@ You must have [Node 14](https://nodejs.org/en/) installed to run the project.
 
 ## Run tests
 
-```
-  npm install
-  npm test
-```
+1. Make sure dependencies is already installed
+`npm install`
+
+2. Run the tests
+`npm test`
