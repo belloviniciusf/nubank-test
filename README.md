@@ -2,12 +2,12 @@
 
 This challenge is part of job process from Nubank. It was necessary to make an application which authorizes transactions for a specific account following a set of predefined rules. 
 
-# Technologies
+## Technologies
 - NodeJS - I chose to use it because I am used to and its where I feel more comfortable. Besides this the Node works good in these problems involving emit of events.
 - Vanilla Javascript - I think it will be better to use Typescript to avoid writing errors and improve the maintenance, but the challenge recommend do not use dependencies, I chose to use Vanilla.
 - Jest - It is to make the tests. I chose Jest because its the tool that I most use to and I had experience working with Models mock using it.
 
-# Disclaimer
+## Disclaimer
 
 The `Authorizer` its an application that looks similar to a messaging queue, in my opinion. Its receive data, process it independently even has the data is not useful and delivery result. Therefore, I chose to think about the solution in these steps:
   - Receive all data and saved it as `operations`;
@@ -19,6 +19,8 @@ I created 3 models:
   - Task - It is a helpful model to store the operations.
   - Validator - It is a generic validator to apply the business rules.
 The business rules are compiled in a individual file cause it is something shared to the project. It is a object [key: value] that enables easily add, modify or delete some rule from kind of data.
+
+--- 
 
 ## Run by Docker (recomendable)
 
