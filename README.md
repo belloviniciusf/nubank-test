@@ -3,9 +3,9 @@
 This challenge is part of job process from Nubank. It was necessary to make an application which authorizes transactions for a specific account following a set of predefined rules. 
 
 ## Technologies
-- NodeJS - I chose to use it because I am used to and its where I feel more comfortable. Besides this the Node works good in these problems involving emit of events.
-- Vanilla Javascript - I think it will be better to use Typescript to avoid writing errors and improve the maintenance, but the challenge recommend do not use dependencies, I chose to use Vanilla.
-- Jest - It is to make the tests. I chose Jest because its the tool that I most use to and I had experience working with Models mock using it.
+- **NodeJS** - I chose to use it because I am used to and its where I feel more comfortable. Besides this the Node works good in these problems involving emit of events.
+- **Javascript** - I think it will be better to use Typescript to avoid writing errors and improve the maintenance, but the challenge recommend do not use dependencies, I chose to use Vanilla.
+- **Jest** - It is to make the tests. I chose Jest because its the tool that I most use to and I had experience working with Models mock using it.
 
 ## Disclaimer
 
