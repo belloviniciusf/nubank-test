@@ -10,14 +10,17 @@ This challenge is part of job process from Nubank. It was necessary to make an a
 ## Disclaimer
 
 The `Authorizer` its an application that looks similar to a messaging queue, in my opinion. Its receive data, process it independently even has the data is not useful and delivery result. Therefore, I chose to think about the solution in these steps:
+
   - Receive all data and saved it as `operations`;
   - Transform it in common object that `Authorizer` could know what kind of data is (`account/transaction`);
   - Process these formatted messages applying the business rules.
+    
 I decided to divide the generical and individual parts to better enjoy the process, so if `Authorizer` in the future must process another kind of data, it is only necessary to understand what is generical/individual and put correctly in each step.
+
 I created 3 models:
-  - Account - It has some getters/setters, a method to do a transaction and another one to get a log message.
-  - Task - It is a helpful model to store the operations.
-  - Validator - It is a generic validator to apply the business rules.
+  - **Account** - It has some getters/setters, a method to do a transaction and another one to get a log message.
+  - **Task** - It is a helpful model to store the operations.
+  - **Validator** - It is a generic validator to apply the business rules.
 The business rules are compiled in a individual file cause it is something shared to the project. It is a object [key: value] that enables easily add, modify or delete some rule from kind of data.
 
 --- 
