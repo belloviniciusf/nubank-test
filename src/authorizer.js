@@ -2,7 +2,7 @@ const readline = require('readline');
 const Account = require('./models/Account');
 const Validator = require('./models/Validator');
 const Task = require('./models/Task');
-const businessRules = require('./helpers/businessRules');
+const businessRules = require('./businessRules');
 const OPERATIONS_TYPE = require('./enums/operationsType');
 
 const receiveMessage = (message) => {    
@@ -10,7 +10,7 @@ const receiveMessage = (message) => {
     else return { type: OPERATIONS_TYPE.TRANSACTION, message: message.transaction };           
 };
 
-const processMessage = (operation) => {  
+const processMessage = (operation) => {      
     let currentAccount = Account.getInstance();    
     
     const validator = new Validator(businessRules);
@@ -28,7 +28,7 @@ const processMessage = (operation) => {
         case OPERATIONS_TYPE.TRANSACTION: {
             if (violations.length > 0) break;
 
-            const transaction = operation.message;            
+            const transaction = operation.message;
 
             currentAccount.addTransaction(transaction);
 
@@ -63,11 +63,15 @@ function start() {
     readlineInterface.addListener('close', () => {
         const operations = task.getOperations();        
 
+        // console.log('operations', operations);
+
         const output = operations.map((operation) => {
             const processedMessage = receiveMessage(operation);
 
+            // console.log('processedMessage', processedMessage);
+
             return processMessage(processedMessage);
-        });
+        });        
 
         console.log('\r');
         output.map((log) => console.log(JSON.stringify(log, null)));    

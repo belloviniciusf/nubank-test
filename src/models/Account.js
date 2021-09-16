@@ -1,7 +1,5 @@
 class Account {
     constructor(isCardActived, availableLimit) {
-        // if(Account._instance) return;
-
         Account._instance = this;        
 
         this.isCardActived = isCardActived;

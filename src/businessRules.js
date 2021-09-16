@@ -1,4 +1,4 @@
-const OPERATIONS_TYPE = require('../enums/operationsType');
+const OPERATIONS_TYPE = require('./enums/operationsType');
 
 const rules = {
     [OPERATIONS_TYPE.ACCOUNT]: [
@@ -14,7 +14,7 @@ const rules = {
             break: true,
         },
         {
-            hasSomeViolation: (instance) => {                                
+            hasSomeViolation: (instance) => {
                 return !instance?.getIsCardActive();
             },
             violation: 'card-not-active'
@@ -29,14 +29,14 @@ const rules = {
             hasSomeViolation: (instance, transaction) => {                                        
                 const currentTransactions = instance?.getTransactions();
                 const currentTransactionTime = new Date(transaction?.time);
-    
-                const recentlyTransactions = currentTransactions?.filter((transaction) => {
-                    const pastTransactionTime = new Date(transaction?.time);
+        
+                const recentlyTransactions = currentTransactions?.filter((pastTransaction) => {
+                    const pastTransactionTime = new Date(pastTransaction?.time);
             
                     const timeElapsed = currentTransactionTime - pastTransactionTime;            
                         
                     return timeElapsed <= 120000;
-                });                                
+                });
     
                 return recentlyTransactions?.length >= 3;
             },
