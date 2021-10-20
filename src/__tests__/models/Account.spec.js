@@ -44,7 +44,7 @@ describe('Account', () => {
 
             const logMessage = account.getLogMessage();
 
-            expect(logMessage).toStrictEqual({ 'active-card': true, 'available-limit': 400 });
+            expect(logMessage).toStrictEqual({ 'active-card': true, 'available-limit': 400, 'allowed-list': false });
         })
     });
 });

@@ -4,6 +4,7 @@ class Account {
 
         this.isCardActived = isCardActived;
         this.availableLimit = availableLimit;        
+        this.allowedList = false;
         this.transactions = [];
 
         return this;
@@ -17,6 +18,14 @@ class Account {
         this.setAvailableLimit(this.availableLimit - transaction.amount);        
         this.setTransactions([...this.transactions, transaction]);        
     }        
+
+    setAllowedList(allowedList) {
+        this.allowedList = allowedList;
+    }
+
+    getAllowedList() {
+        return this.allowedList;
+    }
 
     getIsCardActive() {
         return this.isCardActived;
@@ -40,6 +49,7 @@ class Account {
 
     getLogMessage() {                
         return {            
+            'allowed-list': this.allowedList,
             'active-card': this.isCardActived,
             'available-limit': this.availableLimit
         }

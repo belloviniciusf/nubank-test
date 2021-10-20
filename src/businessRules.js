@@ -63,6 +63,20 @@ const rules = {
             },
             violation: 'doubled-transaction'
         }
+    ],
+    [OPERATIONS_TYPE['ALLOW-LIST']]: [
+        {
+            hasSomeViolation: (instance) => {                
+                return !instance?.getIsCardActive();
+            },
+            violation: 'card-not-active'
+        },
+        {
+            hasSomeViolation: (instance, transaction) => {                            
+                return transaction?.amount > instance?.getAvailableLimit();
+            },
+            violation: 'insufficient-limit'
+        },
     ]
 }
 

@@ -1,0 +1,9 @@
+{ "violations": [], "account": { "allow-listed": false, "available-limit": 1000, "active-card": true } }
+{ "violations": [], "account": { "allow-listed": true, "available-limit": 1000, "active-card": true } }
+{ "violations": [], "account": { "allow-listed": true, "available-limit": 980, "active-card": true } }
+{ "violations": [], "account": { "allow-listed": true, "available-limit": 950, "active-card": true } }
+{ "violations": [], "account": { "allow-listed": true, "available-limit": 910, "active-card": true } }
+{ "violations": [], "account": { "allow-listed": true, "available-limit": 860, "active-card": true } }
+{ "violations": ["insufficient-limit"], "account": { "allow-listed": true, "available-limit": 860, "active-card": true } }
+{ "violations": [], "account": { "allow-listed": false, "available-limit": 860, "active-card": true } }
+{ "violations": ["high-frequency-small-interval"], "account": { "allow-listed": false, "available-limit": 860, "active-card": true } }

@@ -29,13 +29,16 @@ const defaultAccountInstanceMethods = () => {
         getIsCardActive: () => true,
         getAvailableLimit: () => MOCK_ACCOUNT_DATA.account["available-limit"],
         getTransactions: () => [MOCK_TRANSACTION_DATA],
+        getAllowedList: () => false,
+        setAllowedList: () => {},
         addTransaction: () => {},        
     }
 };
 
-const formatAccountResponse = (activeCard, availableLimit, violations) => 
+const formatAccountResponse = (activeCard, availableLimit, violations, allowedList = false) => 
     JSON.stringify({
         account: {
+            'allowed-list': allowedList,
             'active-card': activeCard,
             'available-limit': availableLimit
         },
@@ -517,6 +520,164 @@ describe('authorizer', () => {
 
             expect(console.log).toHaveBeenNthCalledWith(6, 
                 formatAccountResponse(true, 55, [])
+            );
+        });
+
+        it('runs an allow list operation', () => {
+            const commands = [
+                { "account": { "active-card": true, "available-limit": 1000 } },
+                { "allow-list": { "active": true } },
+                { "transaction": { "merchant": "A", "amount": 20, "time": "2019-02-13T10:00:00.000Z" } },
+                { "transaction": { "merchant": "B", "amount": 30, "time": "2019-02-13T10:00:01.000Z" } },
+                { "transaction": { "merchant": "C", "amount": 40, "time": "2019-02-13T10:00:02.000Z" } },
+                { "transaction": { "merchant": "D", "amount": 50, "time": "2019-02-13T10:00:03.000Z" } },
+                { "transaction": { "merchant": "E", "amount": 2000, "time": "2019-02-13T10:00:04.000Z" } },
+                { "allow-list": { "active": false } },
+                { "transaction": { "merchant": "F", "amount": 50, "time": "2019-02-13T10:00:04.000Z" } },
+            ];
+
+            setupReadlineInterface(commands);
+
+            Account
+            .mockImplementationOnce(() => { 
+                return {
+                    getLogMessage: () => ({
+                        'allowed-list': false,
+                        'active-card': true,
+                        'available-limit': 1000
+                    }),
+                }
+            });
+
+            const mockGetInstance = jest.fn()
+                .mockReturnValueOnce()
+                .mockReturnValueOnce({      
+                    ...defaultAccountInstanceMethods(),            
+                    getAllowedList: () => true,             
+                    getLogMessage: () => ({
+                        'allowed-list': true,
+                        'active-card': true,
+                        'available-limit': 1000
+                    }),                    
+                    getAvailableLimit: () => 1000,
+                    getTransactions: () => [],                        
+                })
+                .mockReturnValueOnce({      
+                    ...defaultAccountInstanceMethods(),            
+                    getLogMessage: () => ({
+                        'allowed-list': true,
+                        'active-card': true,
+                        'available-limit': 980
+                    }),       
+                    getAllowedList: () => true,             
+                    getAvailableLimit: () => 980,
+                    getTransactions: () => [],                        
+                })
+                .mockReturnValueOnce({      
+                    ...defaultAccountInstanceMethods(),            
+                    getAllowedList: () => true,
+                    getLogMessage: () => ({
+                        'allowed-list': true,
+                        'active-card': true,
+                        'available-limit': 950
+                    }),                    
+                    getAvailableLimit: () => 950,
+                    getTransactions: () => [],                        
+                })
+                .mockReturnValueOnce({      
+                    ...defaultAccountInstanceMethods(),            
+                    getAllowedList: () => true,
+                    getLogMessage: () => ({
+                        'allowed-list': true,
+                        'active-card': true,
+                        'available-limit': 910
+                    }),                    
+                    getAvailableLimit: () => 910,
+                    getTransactions: () => [commands[2].transaction],                        
+                })
+                .mockReturnValueOnce({      
+                    ...defaultAccountInstanceMethods(),            
+                    getAllowedList: () => true,
+                    getLogMessage: () => ({
+                        'allowed-list': true,
+                        'active-card': true,
+                        'available-limit': 860
+                    }),                    
+                    getAvailableLimit: () => 860,
+                    getTransactions: () => [commands[2].transaction, commands[3].transaction],                        
+                })
+                .mockReturnValueOnce({      
+                    ...defaultAccountInstanceMethods(),            
+                    getAllowedList: () => true,
+                    getLogMessage: () => ({
+                        'allowed-list': true,
+                        'active-card': true,
+                        'available-limit': 860
+                    }),                    
+                    getAvailableLimit: () => 860,
+                    getTransactions: () => [commands[2].transaction, commands[3].transaction, commands[4].transaction],                        
+                })                
+                .mockReturnValueOnce({      
+                    ...defaultAccountInstanceMethods(),            
+                    getLogMessage: () => ({
+                        'allowed-list': false,
+                        'active-card': true,
+                        'available-limit': 860
+                    }),                    
+                    getAvailableLimit: () => 860,
+                    getTransactions: () => [commands[2].transaction, commands[3].transaction, commands[4].transaction],                        
+                })
+                .mockReturnValueOnce({      
+                    ...defaultAccountInstanceMethods(),            
+                    getLogMessage: () => ({
+                        'allowed-list': false,
+                        'active-card': true,
+                        'available-limit': 860
+                    }),                    
+                    getAvailableLimit: () => 860,
+                    getTransactions: () => [commands[2].transaction, commands[3].transaction, commands[4].transaction],                        
+                })
+
+            Account.getInstance = mockGetInstance;            
+
+            start();
+
+            expect(console.log).toBeCalledTimes(10);                        
+
+            expect(console.log).toHaveBeenNthCalledWith(2, 
+                formatAccountResponse(true, 1000, [], false)                                
+            );
+
+            expect(console.log).toHaveBeenNthCalledWith(3, 
+                formatAccountResponse(true, 1000, [], true)                                
+            );
+
+            expect(console.log).toHaveBeenNthCalledWith(4, 
+                formatAccountResponse(true, 980, [], true)                                
+            );
+
+            expect(console.log).toHaveBeenNthCalledWith(5, 
+                formatAccountResponse(true, 950, [], true)                                
+            );
+
+            expect(console.log).toHaveBeenNthCalledWith(6, 
+                formatAccountResponse(true, 910, [], true)                                
+            );
+
+            expect(console.log).toHaveBeenNthCalledWith(7, 
+                formatAccountResponse(true, 860, [], true)                                
+            );
+
+            expect(console.log).toHaveBeenNthCalledWith(8, 
+                formatAccountResponse(true, 860, ['insufficient-limit'], true)                                
+            );
+
+            expect(console.log).toHaveBeenNthCalledWith(9, 
+                formatAccountResponse(true, 860, [], false)                                
+            );
+
+            expect(console.log).toHaveBeenNthCalledWith(10, 
+                formatAccountResponse(true, 860, ['high-frequency-small-interval'], false)                                
             );
         });
 

@@ -7,6 +7,7 @@ const OPERATIONS_TYPE = require('./enums/operationsType');
 
 const receiveMessage = (message) => {    
     if (message.account) return { type: OPERATIONS_TYPE.ACCOUNT, message: message.account };            
+    else if (message['allow-list']) return { type: OPERATIONS_TYPE['ALLOW-LIST'], message: message['allow-list'] };
     else return { type: OPERATIONS_TYPE.TRANSACTION, message: message.transaction };           
 };
 
@@ -15,7 +16,9 @@ const processMessage = (operation) => {
     
     const validator = new Validator(businessRules);
 
-    const violations = validator.validate(currentAccount, operation.type, operation.message);    
+    const operationType = currentAccount?.getAllowedList() ? OPERATIONS_TYPE['ALLOW-LIST']: operation.type;
+
+    const violations = validator.validate(currentAccount, operationType, operation.message);    
 
     if (violations.length === 0) {
         switch(operation.type) {
@@ -32,7 +35,14 @@ const processMessage = (operation) => {
                 currentAccount.addTransaction(transaction);
     
                 break;
-            }                                     
+            }               
+            case OPERATIONS_TYPE['ALLOW-LIST']: {
+                const allowedList = operation.message;
+                
+                currentAccount.setAllowedList(allowedList.active);
+
+                break;
+            }                      
             default:
                 break;
         }    
